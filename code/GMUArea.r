@@ -1,6 +1,5 @@
-library(tidyverse)
-
 # load ----
+library(tidyverse)
 read.csv('./data/GMU.csv') -> GMU
 read.csv('./data/UCU_marine.csv') -> MAR
 read.csv('./data/AdminLand_GMU.csv') -> BLM
@@ -8,7 +7,7 @@ read.csv('./data/CA_GMU.csv') -> CA
 
 # Select, Filter, Sum ----
 GMU %>% group_by (GMU = GMUvalue) %>% 
-  summarize (Total = sum(SqMi)) -> gmu # 2 records for gmu 26 and 14 
+  summarize (Total = sum(SqMi)) -> gmu # 2 recs for gmu 26 and 14 
    
 MAR %>% group_by (GMU = GMUvalue) %>% summarise(
     Marine = sum(sqmiwater)) -> mar
@@ -25,13 +24,14 @@ CA %>% select(AREANAME , GMU = GMUlabel, sqMi_CA) %>% filter (!is.na(AREANAME)) 
 gmu %>% left_join (mar) %>% left_join (ca) %>% left_join (blm) %>% replace(is.na(.), 0) %>%
         rowwise () %>% mutate (
                 Land = Total - Marine,
-                LandNotOpen = sum(`State Closed Areas` + `Alaska Native Allotment` + `Alaska Native Lands Patented or Interim Conveyed`+
-                              `National Park Service` +  Private, na.rm = T),
+                LandNotOpen = sum(`State Closed Areas` + `Alaska Native Allotment` + 
+                                  `Alaska Native Lands Patented or Interim Conveyed`+
+                                  `National Park Service` +  Private, na.rm = T),
                 LandOpen = Land - LandNotOpen,
                 LandOpenPercent = 100 * LandOpen/Land) %>% 
         mutate_at (-1,round, 2) %>% 
         relocate (Land, .after = Marine) -> out
 # write ----
-out %>% write.csv('./out/openAreaByGMU_sqmi.csv')
+out %>% write.csv('./out/openAreaByGMU_sqmi.csv', row.names = F)
 
                 
