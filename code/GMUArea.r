@@ -34,4 +34,13 @@ gmu %>% left_join (mar) %>% left_join (ca) %>% left_join (blm) %>% replace(is.na
 # write ----
 out %>% write.csv('./out/openAreaByGMU_sqmi.csv', row.names = F)
 
-                
+# compare to results via erase ----
+read.csv ('./data/gmuOpen_viaEras.csv') -> ers
+read.csv('./out/openAreaByGMU_sqmi.csv') -> out
+
+ers %>% mutate (GMU = GMUvalue) %>%
+  group_by(GMU) %>% summarize (open_ers = sum(sqmi_open))   -> ers        
+
+out %>% left_join (ers) %>%
+  select(GMU, LandOpen, open_ers) %>% mutate (dif = open_ers - LandOpen, perdif = round(100* dif/open_ers, 2))
+
