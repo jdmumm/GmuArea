@@ -31,9 +31,13 @@ gmu %>% left_join (mar) %>% left_join (ca) %>% left_join (blm) %>% replace(is.na
                 LandOpenPercent = 100 * LandOpen/Land) %>% 
         mutate_at (-1,round, 2) %>% 
         relocate (Land, .after = Marine) -> out
+  # sqmi to acres 
+    out %>% mutate(across(2:11, ~.x * 640)) -> acres
+
 # write ----
 out %>% write.csv('./out/openAreaByGMU_sqmi.csv', row.names = F)
-
+acres %>% write.csv('./out/openAreaByGMU_acres.csv', row.names = F)
+    
 # compare to results via erase ----
 read.csv ('./data/gmuOpen_viaEras.csv') -> ers
 read.csv('./out/openAreaByGMU_sqmi.csv') -> out
